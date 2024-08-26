@@ -1,10 +1,10 @@
 version: '3.6'
 services:
   frps_drawio:
-    image: rayruan/amd64_frp:0.45.0
-    container_name: frps_drawio
+    image: "rayruan/amd64_frp:${FRP_VERSION-0.60.0}"
+    container_name: "${SERVER_NAME:-frps_bookstack}"
     ports:
-      - "7000:7000"
+      - "${FRPS_SERVER_IP}:${FRPS_BIND_PORT:-7000}:${FRPS_BIND_PORT:-7000}/udp"
     expose:
       - "${VIRTUAL_PORT:-8001}" 
     environment:
@@ -12,17 +12,17 @@ services:
       PGID: 1000
       HTTPS_METHOD: nohttps
 #      LETSENCRYPT_HOST: "${LETSENCRYPT_HOST:-bar.com}"
-      VIRTUAL_PORT: "${VIRTUAL_PORT:-8001}"
+      VIRTUAL_PORT: "${VIRTUAL_PORT:-8080}"
       VIRTUAL_HOST: "${VIRTUAL_HOST:-foo.bar.com}"
       VIRTUAL_PATH: "${VIRTUAL_PAHT:-/}"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - ${FRPS_INSTALL_ROOT_PATH:-./}/${FRPS_CFGS_DIR:-cfgs}/frps.ini:/etc/frp/frps.ini
-      - ${FRPS_INSTALL_ROOT_PATH:-./}/frps_entrypoint.sh:/app/frps_entrypoint.sh
-      - ${SELFSIGNED_CERTS_ROOT_PATH:-./selfsigned_rootCA}/frps/server.crt:/server.crt
-      - ${SELFSIGNED_CERTS_ROOT_PATH:-./selfsigned_rootCA}/frps/server.key:/server.key
-      - ${SELFSIGNED_CERTS_ROOT_PATH:-./selfsigned_rootCA}/rootCA.crt:/rootCA.crt
+      - ${INSTALL_ROOT_PATH}/${SERVER_NAME}/${CFGS_DIR}/frps.toml:/etc/frp/frps.toml:ro
+      - ${INSTALL_ROOT_PATH}/${SERVER_NAME}/frps_entrypoint.sh:/app/frps_entrypoint.sh:ro
+      - ${INSTALL_ROOT_PATH}/${SERVER_NAME}/${CERTS_DIR}/server.crt:/server.crt:ro
+      - ${INSTALL_ROOT_PATH}/${SERVER_NAME}/${CERTS_DIR}/server.key:/server.key:ro
+      - ${INSTALL_ROOT_PATH}/${SERVER_NAME}/${CERTS_DIR}/rootCA.crt:/ca.crt:ro
     entrypoint: /app/frps_entrypoint.sh
     networks:
       - "nginx-proxy"

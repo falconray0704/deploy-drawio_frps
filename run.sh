@@ -27,31 +27,38 @@ else
 fi
 
 
+. ./src/.env
+
+DEPLOY_ROOT=${INSTALL_ROOT_PATH}
+
+SERVER_DIR=${SERVER_NAME}
+SERVER_HOME=${DEPLOY_ROOT}/${SERVER_DIR}
 
 SUPPORTED_CMD="deploy"
-SUPPORTED_TARGETS="drawio_frps"
+SUPPORTED_TARGETS="${SERVER_NAME}"
 
 EXEC_CMD=""
 EXEC_ITEMS_LIST=""
 
-DEPLOY_ROOT=${HOME}/servers
-DRAWIO_FRPS_DIR=drawio_frps
-DRAWIO_FRPS_HOME=${DEPLOY_ROOT}/${DRAWIO_FRPS_DIR}
 
-deploy_drawio_frps()
+
+deploy_frps_drawio()
 {
     if [ ! -d ${DEPLOY_ROOT} ]
     then
         echoR "Deploy root path:${DEPLOY_ROOT} does not exsist, create it manully first!!!"
         exit 1
-    elif [ -d ${DRAWIO_FRPS_HOME} ]
+    elif [ -d ${SERVER_HOME} ]
     then
-        echoY "Already deployed drawio_frps in ${DRAWIO_FRPS_HOME}, check it there first!"
+        echoY "Already deployed ${SERVER_NAME} in ${SERVER_HOME}, check it there first!"
         exit 1
     else
-        echoY "Deploying drawio_frps..."
-        cp -a ./src ${DRAWIO_FRPS_HOME}
-        echoG "drawio_frps has been deployed to ${DRAWIO_FRPS_HOME} successfully."
+        echoY "Deploying ${SERVER_NAME}..."
+        cp -a ./src ${SERVER_HOME}
+
+        #mkdir -p ${INSTALL_ROOT_PATH}/${SERVER_NAME}/${SELFSIGNED_CERTS_DIR}
+
+        echoG "${SERVER_NAME} has been deployed to ${DEPLOY_ROOT}/${SERVER_HOME} successfully."
         cat ./src/README.md
     fi
 }
@@ -61,7 +68,7 @@ usage_func()
 
     echoY "Usage:"
     echoY './run.sh -c <cmd> -l "<item list>"'
-    echoY "eg:\n./run.sh -c deploy -l \"drawio_frps\""
+    echoY "eg:\n./run.sh -c deploy -l \"${SERVER_NAME}\""
 
     echoC "Supported cmd:"
     echo "${SUPPORTED_CMD}"

@@ -13,11 +13,19 @@ set -e
 
 source .env
 
-rm -rf ${SELFSIGNED_CERTS_ROOT_PATH}
-mkdir -p ${SELFSIGNED_CERTS_ROOT_PATH}
+timestamp()
+{
+    TIMESTAMP="$(date +%Y%m%d-%H%M%S)" 
+    echo ${TIMESTAMP}
+}
+TIME=$(timestamp)
 
 
-pushd ${SELFSIGNED_CERTS_ROOT_PATH}
+SELFSIGNED_CERTS_DIR="${SELFSIGNED_CERTS_DIR}_${TIME}"
+mkdir -p ${SELFSIGNED_CERTS_DIR}
+
+
+pushd ${SELFSIGNED_CERTS_DIR}
 
 # root CA
 #openssl rand -out ${HOME}/.rnd -hex 256
@@ -89,5 +97,32 @@ openssl x509 -req -days 365 -sha256 \
 
 popd
 
-tree -a ${SELFSIGNED_CERTS_ROOT_PATH}
+tree -a ${SELFSIGNED_CERTS_DIR}
+
+BACKUP_PATH=backups
+mkdir -p ${BACKUP_PATH}
+
+cp -a ${SELFSIGNED_CERTS_DIR} ${BACKUP_PATH}/
+
+
+rm -rf ${CERTS_DIR}
+rm -rf ${CERTS_DIR}_client
+
+
+mkdir -p ${CERTS_DIR}
+cp ${SELFSIGNED_CERTS_DIR}/frps/server.crt ${CERTS_DIR}/
+cp ${SELFSIGNED_CERTS_DIR}/frps/server.key ${CERTS_DIR}/
+cp ${SELFSIGNED_CERTS_DIR}/rootCA.crt ${CERTS_DIR}/
+
+tree -a ${CERTS_DIR}
+
+
+mkdir -p ${CERTS_DIR}_client
+cp ${SELFSIGNED_CERTS_DIR}/frpc/client.crt "${CERTS_DIR}_client"/
+cp ${SELFSIGNED_CERTS_DIR}/frpc/client.key "${CERTS_DIR}_client"/
+cp ${SELFSIGNED_CERTS_DIR}/rootCA.crt "${CERTS_DIR}_client"/
+
+tar -zcf ${CERTS_DIR}_client_${TIME}.tar.gz ${CERTS_DIR}_client
+
+tree -a "${CERTS_DIR}_client"
 
